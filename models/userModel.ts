@@ -1,4 +1,12 @@
-const database = [
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  password: string;
+  githubId?: string;
+}
+
+const database: User[] = [
   {
     id: 1,
     name: "Jimmy Smith",
@@ -20,22 +28,35 @@ const database = [
 ];
 
 const userModel = {
-
-  /* FIX ME (types) 😭 */
-  findOne: (email: string) => {
+  findOne: (email: string): User | undefined => {
     const user = database.find((user) => user.email === email);
-    if (user) {
-      return user;
-    }
-    throw new Error(`Couldn't find user with email: ${email}`);
+    return user;
   },
-  /* FIX ME (types) 😭 */
-  findById: (id: number) => {
+  findById: (id: number): User | undefined => {
     const user = database.find((user) => user.id === id);
+    return user;
+  },
+  findOrCreate: async (
+    githubId: string,
+    profile: any
+  ): Promise<{ user: User; created: boolean }> => {
+    let user = database.find((user) => user.githubId === githubId);
+
     if (user) {
-      return user;
+      return { user, created: false };
     }
-    throw new Error(`Couldn't find user with id: ${id}`);
+
+    const newUser: User = {
+      id: database.length + 1, 
+      name: profile.displayName || profile.username,
+      email: profile.emails[0].value,
+      password: "", 
+      githubId: githubId, 
+    };
+
+    database.push(newUser);
+
+    return { user: newUser, created: true };
   },
 };
 
