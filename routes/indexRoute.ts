@@ -4,8 +4,7 @@ import { ensureAuthenticated } from "../middleware/checkAuth";
 
 router.get("/", (req, res) => {
   const sessionId = req.sessionID;
-  res.render('index.ejs');
-  
+  res.render("index.ejs");
 });
 
 router.get("/dashboard", ensureAuthenticated, (req, res) => {

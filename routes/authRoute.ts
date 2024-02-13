@@ -1,8 +1,11 @@
 import express from "express";
 import passport from "passport";
-import { forwardAuthenticated, ensureAuthenticated} from "../middleware/checkAuth";
+import {
+  forwardAuthenticated,
+  ensureAuthenticated,
+} from "../middleware/checkAuth";
 import flash from "express-flash";
-import { fetchAllSessions } from "../middleware/sessionMiddleware";
+import { isAdmin } from "../middleware/isAdmin";
 
 const router = express.Router();
 router.use(flash());
@@ -13,7 +16,7 @@ router.get("/login", forwardAuthenticated, (req, res) => {
 
 // Local authentication route with manual redirection
 router.post("/login", (req, res, next) => {
-  const sessionId = req.sessionID;
+
   passport.authenticate("local", (err, user, info) => {
     if (err) {
       return next(err);
@@ -55,31 +58,56 @@ router.get("/github/callback", (req, res, next) => {
   })(req, res, next);
 });
 
-
-router.get('/admin', ensureAuthenticated, (req, res) => {
-  fetchAllSessions((error, sessions) => {
+router.get("/admin", ensureAuthenticated, (req, res) => {
+  const store = req.sessionStore;
+  // @ts-ignore
+  store.all((error, sessions) => {
     if (error) {
-      console.error('Error fetching sessions:', error);
-      return res.status(500).render('error', { message: 'Error fetching sessions' });
+      console.error("Error fetching sessions:", error);
+      res.redirect('/login');
+    } else {
+      const user = req.user;
+
+      console.log("All the sessions are:", sessions);
+      res.render('admin', { sessions, user });
     }
-    
-    // Render the admin page with session data
-    res.render('admin', {
-      user: req.user,
-      sessions: sessions
+  });
+});
+
+router.post("/admin/revoke/:sessionId", isAdmin, async (req, res) => {
+  const { sessionId } = req.params; 
+  const store = req.sessionStore;
+
+  store.destroy(sessionId, (err) => {
+    if (err) {
+      console.error("Error destroying session:", err);
+      return res.status(500).send({ message: "Failed to revoke session" });
+    }
+
+  // @ts-ignore
+    store.all((error, sessions) => {
+      if (error) {
+        console.error("Error fetching sessions:", error);
+        return res.status(500).send({ message: "Failed to fetch sessions after revocation." });
+      }
+      res.render('admin', {
+        user: req.user, // Ensure this object is correctly populated
+        message: "Session revoked successfully",
+        sessions
+        // Include other necessary data for the admin view here
+      });
     });
   });
 });
 
-router.post("/admin/revoke/:sessionId", (req, res) => {
-
-})
-
 router.get("/logout", (req, res) => {
   req.logout((err) => {
-    if (err) console.log(err);
+    if (err) {
+      console.log(err);
+    }
+    req.session.destroy(() => {
+      res.redirect("/auth/login");
+    });
   });
-  res.redirect("/auth/login");
 });
-
 export default router;

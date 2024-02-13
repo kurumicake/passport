@@ -1,14 +1,37 @@
 <h1 class="mt-4">Dashboard</h1>
 <p class="lead mb-3">Welcome <%= user.name %></p>
-<a href="/auth/logout" class="btn btn-secondary">Logout</a>
-
+<hr>
+<style>
+          button {
+            display: inline-block;
+            padding: 6px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+</style>
+<% if (typeof message !== 'undefined' && message) { %>
+  <div class="alert alert-success" role="alert">
+    <%= message %>
+  </div>
+<% } %>
+<p> Current Active Sessions:</p>
 <ul>
-  <% sessions.forEach(function(sessionId) { %>
+  <% Object.keys(sessions).forEach(function(sessionId) { %>
     <li>
-      Session ID: <%= sessionId %> 
-      <form action="/admin/revoke/<%= sessionId %>" method="POST">
-        <button type="submit">Revoke</button>
+      Session ID: <%= sessionId %><br>
+      User ID: <%=user.id%>
+      <form action="/auth/admin/revoke/<%= sessionId %>" method="POST">
+        <button type="submit">Revoke Session</button>
       </form>
-    </li>
-  <% }) %>
+    </li><br>
+  <% }); %>
 </ul>
+<hr>
+<a href="/auth/logout" class="btn btn-secondary">Logout</a>

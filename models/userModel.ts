@@ -26,7 +26,7 @@ const database: IUser[] = [
     id: 4,
     name: "Christy Wan",
     email: "christy123@gmail.com",
-    password: "christy123!",
+    password: "123321!",
     role: "admin",
   },
 ];
