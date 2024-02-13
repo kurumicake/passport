@@ -1,19 +1,16 @@
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
-import { getUserByEmailIdAndPassword, getUserById} from "../../controllers/userController";
-import { PassportStrategy } from '../../interfaces/index';
-import { VerifyCallback } from "passport-oauth2";
+import {
+  getUserByEmailIdAndPassword,
+  getUserById,
+} from "../../controllers/userController";
+import { PassportStrategy } from "../../interfaces/index";
+import { User as MyUser} from "../../interfaces/user";
+
 
 declare global {
   namespace Express {
-    export interface User {
-      id: number;
-      name: string;
-      email: string;
-      password: string;
-      githubId?: string;
-      role: 'normalUser' | 'admin'; 
-    }
+    interface User extends MyUser {}
   }
 }
 
@@ -35,14 +32,20 @@ const localStrategy = new LocalStrategy(
 /*
 FIX ME (types) 😭
 */
-passport.serializeUser(function (user: Express.User, done: ((err: any, id?: number) => void)) {
+passport.serializeUser(function (
+  user: Express.User,
+  done: (err: any, id?: number) => void
+) {
   done(null, user.id);
 });
 
 /*
 FIX ME (types) 😭
 */
-passport.deserializeUser(function (id: number, done: (err: any, user?: Express.User | false | null) => void) {
+passport.deserializeUser(function (
+  id: number,
+  done: (err: any, user?: Express.User | false | null) => void
+) {
   let user = getUserById(id);
   if (user) {
     done(null, user);
@@ -52,7 +55,7 @@ passport.deserializeUser(function (id: number, done: (err: any, user?: Express.U
 });
 
 const passportLocalStrategy: PassportStrategy = {
-  name: 'local',
+  name: "local",
   strategy: localStrategy,
 };
 
