@@ -3,16 +3,21 @@ import expressLayouts from "express-ejs-layouts";
 import session from "express-session";
 import path from "path";
 import passportMiddleware from './middleware/passportMiddleware';
+const sessionStore = new session.MemoryStore();
 
 const port = process.env.port || 8000;
 
 const app = express();
-
+app.use((req,res,next) => {
+  console.log(sessionStore);
+  console.log(`${req.method} - ${req.url}`)
+  next();
+})
 app.set("view engine", "ejs");
 app.use(express.static(path.join(__dirname, "public")));
 app.use(
   session({
-    secret: "secret",
+    secret: "my cat meow",
     resave: false,
     saveUninitialized: false,
     cookie: {
@@ -32,7 +37,7 @@ app.use(expressLayouts);
 app.use(express.urlencoded({ extended: true }));
 passportMiddleware(app);
 
-app.use((req, res, next) => {
+app.use((req, res, next) => { 
   console.log(`User details are: `);
   console.log(req.user);
 

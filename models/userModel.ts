@@ -4,6 +4,7 @@ interface User {
   email: string;
   password: string;
   githubId?: string;
+  role: 'normalUser' | 'admin'; 
 }
 
 const database: User[] = [
@@ -12,18 +13,28 @@ const database: User[] = [
     name: "Jimmy Smith",
     email: "jimmy123@gmail.com",
     password: "jimmy123!",
+    role: 'normalUser', 
   },
   {
     id: 2,
     name: "Johnny Doe",
     email: "johnny123@gmail.com",
     password: "johnny123!",
+    role: 'normalUser', 
   },
   {
     id: 3,
     name: "Jonathan Chen",
     email: "jonathan123@gmail.com",
     password: "jonathan123!",
+    role: 'normalUser', 
+  },
+  {
+    id: 4,
+    name: "Christy Wan",
+    email: "christy123@gmail.com",
+    password: "christy123!",
+    role: 'admin', 
   },
 ];
 
@@ -46,12 +57,15 @@ const userModel = {
       return { user, created: false };
     }
 
+    const email = profile.emails && profile.emails.length > 0 ? profile.emails[0].value : "no-email@example.com";
+    
     const newUser: User = {
-      id: database.length + 1, 
-      name: profile.displayName || profile.username,
-      email: profile.emails[0].value,
-      password: "", 
-      githubId: githubId, 
+      id: database.length + 1,
+      name: profile.displayName || profile.username || "Unknown Name",
+      email: email, 
+      password: "",
+      githubId: githubId,
+      role: 'normalUser',
     };
 
     database.push(newUser);

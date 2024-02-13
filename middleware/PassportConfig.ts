@@ -16,7 +16,6 @@ export default class PassportConfig {
      passport strategies are added when this class is created. ⭐️
     */
   constructor(strategies: PassportStrategy[]) {
-    // this.strategies = [];
     this.addStrategies(strategies);
   }
 
