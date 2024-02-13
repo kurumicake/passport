@@ -5,8 +5,9 @@
         <img src="/secure-icon.png" alt="icon" width="20%" />
       </h1>
       <h2>Login</h2>
-      <a> <% if (messages.error) { %> </a>
-      <%= messages.error %> <% }%>
+      <% if (typeof messages.error !== 'undefined' && messages.error) { %>
+      <div class="alert alert-danger" role="alert"><%= messages.error %></div>
+      <% } %>
       <form action="/auth/login" method="POST">
         <div class="form-group">
           <label for="email">Email</label>
@@ -30,7 +31,7 @@
         </div>
         <button type="submit" class="btn btn-primary btn-block">Login</button>
       </form>
-      <hr>
+      <hr />
       OR
       <!-- GitHub Login Button -->
       <a href="/auth/github" class="btn btn-secondary btn-block mt-3"

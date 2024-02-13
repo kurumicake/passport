@@ -2,15 +2,15 @@ import express from "express";
 import expressLayouts from "express-ejs-layouts";
 import session from "express-session";
 import path from "path";
-import passportMiddleware from './middleware/passportMiddleware';
+import passportMiddleware from "./middleware/passportMiddleware";
 
 const port = process.env.port || 8000;
 
 const app = express();
-app.use((req,res,next) => {
-  console.log(`${req.method} - ${req.url}`)
+app.use((req, res, next) => {
+  console.log(`${req.method} - ${req.url}`);
   next();
-})
+});
 app.set("view engine", "ejs");
 app.use(express.static(path.join(__dirname, "public")));
 app.use(
@@ -35,18 +35,20 @@ app.use(expressLayouts);
 app.use(express.urlencoded({ extended: true }));
 passportMiddleware(app);
 
-app.use((req, res, next) => { 
-  console.log(`Your session ID is: `);
+app.use((req, res, next) => {
+  console.log("-------------------------------Start---------------------------------");
+  console.log(`🫥 Your session ID is: `);
   console.log(req.sessionID);
-
-  console.log(`User details are: `);
+  console.log("---------------------------------");
+  console.log(`👩‍🎓 User details are: `);
   console.log(req.user);
-
-  console.log("Entire session object:");
+  console.log("---------------------------------");
+  console.log("🤏🏼 Entire session object:");
   console.log(req.session);
-
-  console.log(`Session details are: `);
+  console.log("---------------------------------");
+  console.log(`🐱 Session details are: `);
   console.log((req.session as any).passport);
+  console.log("-------------------------------Finish---------------------------------");
   next();
 });
 

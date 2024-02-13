@@ -5,8 +5,7 @@ import {
   getUserById,
 } from "../../controllers/userController";
 import { PassportStrategy } from "../../interfaces/index";
-import { User as MyUser} from "../../interfaces/user";
-
+import { User as MyUser } from "../../interfaces/user";
 
 declare global {
   namespace Express {
