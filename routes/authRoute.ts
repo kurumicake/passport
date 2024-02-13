@@ -10,33 +10,28 @@ import { isAdmin } from "../middleware/isAdmin";
 const router = express.Router();
 router.use(flash());
 
+// Login page
 router.get("/login", forwardAuthenticated, (req, res) => {
   res.render("login");
 });
 
-// Local authentication route with manual redirection
+// Handle local authentication
 router.post("/login", (req, res, next) => {
-
   passport.authenticate("local", (err, user, info) => {
-    if (err) {
-      return next(err);
-    }
+    if (err) return next(err);
     if (!user) {
       req.flash("error", info.message);
       return res.redirect("/auth/login");
     }
     req.logIn(user, (err) => {
-      if (err) {
-        return next(err);
-      }
-      // Redirect based on user role
+      if (err) return next(err);
       const redirectUrl = user.role === "admin" ? "/auth/admin" : "/dashboard";
       return res.redirect(redirectUrl);
     });
   })(req, res, next);
 });
 
-// GitHub authentication route with manual redirection
+// GitHub authentication route
 router.get(
   "/github",
   passport.authenticate("github", { scope: ["user:email"] })
@@ -49,65 +44,70 @@ router.get("/github/callback", (req, res, next) => {
       return res.redirect("/login");
     }
     req.logIn(user, (err) => {
-      if (err) {
-        return next(err);
-      }
+      if (err) return next(err);
       const redirectUrl = user.role === "admin" ? "/auth/admin" : "/dashboard";
       return res.redirect(redirectUrl);
     });
   })(req, res, next);
 });
 
-router.get("/admin", ensureAuthenticated, (req, res) => {
-  const store = req.sessionStore;
-  // @ts-ignore
-  store.all((error, sessions) => {
-    if (error) {
-      console.error("Error fetching sessions:", error);
-      res.redirect('/login');
-    } else {
-      const user = req.user;
-
-      console.log("All the sessions are:", sessions);
-      res.render('admin', { sessions, user });
-    }
-  });
-});
-
-router.post("/admin/revoke/:sessionId", isAdmin, async (req, res) => {
-  const { sessionId } = req.params; 
+// Admin page with session information
+router.get("/admin", ensureAuthenticated, isAdmin, (req, res) => {
   const store = req.sessionStore;
 
-  store.destroy(sessionId, (err) => {
-    if (err) {
-      console.error("Error destroying session:", err);
-      return res.status(500).send({ message: "Failed to revoke session" });
-    }
-
-  // @ts-ignore
+  if (store.all) {
     store.all((error, sessions) => {
       if (error) {
         console.error("Error fetching sessions:", error);
-        return res.status(500).send({ message: "Failed to fetch sessions after revocation." });
+        return res.redirect("/login");
       }
-      res.render('admin', {
-        user: req.user, // Ensure this object is correctly populated
-        message: "Session revoked successfully",
-        sessions
-        // Include other necessary data for the admin view here
-      });
+      res.render("admin", { user: req.user, sessions });
     });
-  });
+  }
 });
 
+// Handle session revocation
+router.post(
+  "/admin/revoke/:sessionId",
+  ensureAuthenticated,
+  isAdmin,
+  (req, res) => {
+    const { sessionId } = req.params;
+    const store = req.sessionStore;
+
+    store.destroy(sessionId, (err) => {
+      if (err) {
+        console.error("Error destroying session:", err);
+        return res.status(500).send("Failed to revoke session");
+      }
+
+      if (store.all) {
+        store.all((error, sessions) => {
+          if (error) {
+            console.error("Error fetching sessions:", error);
+            return res
+              .status(500)
+              .send("Failed to fetch sessions after revocation.");
+          }
+          res.render("admin", {
+            user: req.user,
+            message: "Session revoked successfully",
+            sessions,
+          });
+        });
+      }
+    });
+  }
+);
+
+// Logout route
 router.get("/logout", (req, res) => {
   req.logout((err) => {
-    if (err) {
-      console.log(err);
-    }
+    if (err) console.log(err);
     req.session.destroy(() => {
       res.redirect("/auth/login");
     });
   });
 });
+
 export default router;
