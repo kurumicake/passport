@@ -6,12 +6,13 @@ import { VerifyCallback } from "passport-oauth2";
 
 declare global {
   namespace Express {
-    interface User {
+    export interface User {
       id: number;
       name: string;
       email: string;
       password: string;
       githubId?: string;
+      role: 'normalUser' | 'admin'; 
     }
   }
 }
